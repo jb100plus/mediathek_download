@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+
+"""script to download videos from the mediathek of german public broadcasting,
+   which are delivered in segments use the network analysis of your browser to discover the source url
+"""
+
+
 import urllib.request
 import sys
 import os.path
