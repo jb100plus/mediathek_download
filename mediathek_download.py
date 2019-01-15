@@ -9,6 +9,7 @@
 import urllib.request
 import sys
 import os.path
+import progressbar
 
 
 if len(sys.argv) != 3:
@@ -24,6 +25,7 @@ if os.path.isfile(destination_filename):
     print('file {0} exists, aborting.'.format(destination_filename))
     exit(0)
 
+bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength).start()
 destination = open(destination_filename, 'wb')
 
 for i in range(1, 2000):
@@ -32,8 +34,9 @@ for i in range(1, 2000):
         videoreqest = urllib.request.urlopen(nurl)
         segmentdata = videoreqest.read()
         destination.write(segmentdata)
+        bar.update(i)
     except urllib.error.HTTPError as he:
-        print('download finished {} segments'.format(i - 1))
+        bar.finish(end=os.linesep + 'download done' + os.linesep)
         break
 
 destination.close()
