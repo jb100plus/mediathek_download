@@ -1,16 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """script to download videos from the mediathek of german public broadcasting,
    which are delivered in segments 
    use the network analysis of your browser to discover the source url
 """
 
-
-import urllib.request
-import sys
 import os.path
-import progressbar
-
+import sys
+import urllib.request
 
 if len(sys.argv) != 3:
     print('usage mediathek_download.py source_url destination_file')
@@ -23,21 +20,23 @@ destination_filename = sys.argv[2]
 
 if os.path.isfile(destination_filename):
     print('file {0} exists, aborting.'.format(destination_filename))
-    exit(0)
+    exit(1)
 
-bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength).start()
-destination = open(destination_filename, 'wb')
-
+destination = None
 for i in range(1, 2000):
     try:
         nurl = source.format(i)
         videoreqest = urllib.request.urlopen(nurl)
         segmentdata = videoreqest.read()
+        if destination is None:
+            destination = open(destination_filename, 'wb')
         destination.write(segmentdata)
-        bar.update(i)
+        print('.', end='')
+        sys.stdout.flush()
     except urllib.error.HTTPError as he:
-        bar.finish(end=os.linesep + 'download done' + os.linesep)
-        break
-
+        print(str(he))
+        exit(1)
 destination.close()
 
+print('done')
+exit(0)
