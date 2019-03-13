@@ -8,22 +8,29 @@
 import os.path
 import sys
 import urllib.request
+import re
 
 if len(sys.argv) != 3:
     print('usage mediathek_download.py source_url destination_file')
-    print('the source must contain a placeholder for the segment number (curly braces)')
-    print('e.g. https://mediathek/segment{}_123_av.ts')
-    exit(0)
+    print('the source must contain a segment number')
+    exit(1)
 
 source = sys.argv[1]
-destination_filename = sys.argv[2]
+p = re.compile('(segment\d+)',re.IGNORECASE)
+source, count = p.subn('segment{}', source)
+if count == 0:
+    print('no segment item found')
+    exit(1)
+print(source)
 
+destination_filename = sys.argv[2]
 if os.path.isfile(destination_filename):
     print('file {0} exists, aborting.'.format(destination_filename))
     exit(1)
 
+hasgotdata = False
 destination = None
-for i in range(1, 2000):
+for i in range(1, 9999):
     try:
         nurl = source.format(i)
         videoreqest = urllib.request.urlopen(nurl)
@@ -31,12 +38,17 @@ for i in range(1, 2000):
         if destination is None:
             destination = open(destination_filename, 'wb')
         destination.write(segmentdata)
+        hasgotdata = True
         print('.', end='')
         sys.stdout.flush()
     except urllib.error.HTTPError as he:
-        print(str(he))
-        exit(1)
-destination.close()
+        if hasgotdata:
+            destination.close()
+            print('')
+            print('done')
+            break
+        else:
+            print(str(he))
+            exit(1)
 
-print('done')
 exit(0)
